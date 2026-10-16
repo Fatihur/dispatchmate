@@ -22,13 +22,19 @@ export default function UnitCard({
   };
 
   return (
-    <div className="rounded-xl border border-line bg-panel p-4 transition-colors hover:border-mute">
+    <div className="relative overflow-hidden rounded-lg border border-line bg-panel py-3 pl-5 pr-4 transition-colors hover:border-mute">
+      {/* tick status kiri */}
+      <span
+        aria-hidden
+        className="absolute bottom-3 left-0 top-3 w-[2px] rounded-full"
+        style={{ background: meta.color }}
+      />
       <div className="flex items-start justify-between gap-2">
         <div>
-          <div className="font-mono text-xl font-bold text-white">
+          <div className="font-mono text-lg font-bold leading-tight text-text">
             {unit.code}
           </div>
-          <div className="mt-0.5 text-xs text-mute">
+          <div className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-mute">
             {TYPE_LABELS[unit.type] || unit.type}
           </div>
         </div>
@@ -40,7 +46,7 @@ export default function UnitCard({
               ? "Matikan simulasi untuk ubah status manual"
               : "Klik untuk ganti status"
           }
-          className="rounded-full px-3 py-1 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-60"
+          className="shrink-0 rounded-full px-2.5 py-1 font-mono text-[11px] font-bold disabled:cursor-not-allowed disabled:opacity-60"
           style={{
             color: meta.color,
             background: meta.bg,
@@ -51,14 +57,16 @@ export default function UnitCard({
         </button>
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-2">
+      <div className="mt-2.5 flex items-center justify-between gap-2">
         {isTruck ? (
           <label className="flex w-full items-center gap-2 text-xs text-mute">
-            <span className="shrink-0">Shovel:</span>
+            <span className="shrink-0 font-mono text-[10px] uppercase tracking-wider">
+              Shovel
+            </span>
             <select
               value={unit.assigned_to || ""}
               onChange={(e) => onAssign(unit.code, e.target.value || null)}
-              className="w-full rounded-md border border-line bg-panel2 px-2 py-1.5 text-xs text-white outline-none focus:border-lime"
+              className="w-full rounded-md border border-line bg-panel2 px-2 py-1.5 font-mono text-xs text-text outline-none focus:border-lime"
             >
               <option value="">— tidak ditugaskan —</option>
               {shovels.map((s) => (
@@ -69,7 +77,7 @@ export default function UnitCard({
             </select>
           </label>
         ) : (
-          <span className="text-xs text-mute">
+          <span className="font-mono text-[11px] text-mute">
             {unit.assigned_to
               ? `Melayani: ${unit.assigned_to}`
               : "Belum ada penugasan"}

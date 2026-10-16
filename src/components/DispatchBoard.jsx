@@ -9,6 +9,8 @@ import { fetchActiveDelays } from "../services/delays.js";
 import { recordCycle, fetchTodayStats } from "../services/cycles.js";
 import StatCard from "./StatCard.jsx";
 import UnitCard from "./UnitCard.jsx";
+import SectionHeader from "./SectionHeader.jsx";
+import CornerTicks from "./CornerTicks.jsx";
 
 const PHASE_MS = 2600;
 const PAUSED_STATUSES = ["breakdown", "refuel"];
@@ -278,13 +280,14 @@ export default function DispatchBoard() {
     (u) => u.type !== "haul_truck" && u.type !== "excavator"
   );
 
-  const group = (title, list) =>
+  const group = (index, title, list) =>
     list.length > 0 && (
       <div key={title}>
-        <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-mute">
-          {title}
-        </h3>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <SectionHeader
+          index={index}
+          title={`${title} — ${list.length} UNIT`}
+        />
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {list.map((u) => (
             <UnitCard
               key={u.code}
@@ -302,43 +305,63 @@ export default function DispatchBoard() {
   return (
     <div className="space-y-6">
       {error && (
-        <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 font-mono text-xs text-red-300">
           {error}
         </div>
       )}
 
-      {/* stats strip */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Ritase hari ini" value={stats.ritase} unit="rit" accent />
-        <StatCard label="Rata-rata cycle time" value={stats.avgCycle} unit="mnt" />
-        <StatCard label="Unit aktif" value={stats.activeUnits} unit="unit" />
-        <StatCard
-          label="Unit dalam delay"
-          value={stats.activeDelays}
-          unit="unit"
-        />
+      {/* stat strip — satu panel, divider hairline, corner ticks */}
+      <div className="relative overflow-hidden rounded-lg border border-line">
+        <CornerTicks />
+        <div className="grid grid-cols-2 gap-px bg-line lg:grid-cols-4">
+          <StatCard
+            index="01"
+            label="Ritase hari ini"
+            value={stats.ritase}
+            unit="rit"
+            accent
+          />
+          <StatCard
+            index="02"
+            label="Rata-rata cycle time"
+            value={stats.avgCycle}
+            unit="mnt"
+          />
+          <StatCard
+            index="03"
+            label="Unit aktif"
+            value={stats.activeUnits}
+            unit="unit"
+          />
+          <StatCard
+            index="04"
+            label="Unit dalam delay"
+            value={stats.activeDelays}
+            unit="unit"
+          />
+        </div>
       </div>
 
       {/* kontrol simulasi */}
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-panel px-4 py-3">
+      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-panel px-4 py-3">
         <button
           onClick={() => setSimOn((v) => !v)}
-          className={`rounded-lg px-5 py-2.5 text-sm font-bold transition-colors ${
+          className={`rounded-md px-5 py-2.5 font-mono text-xs font-bold tracking-[0.12em] transition-colors ${
             simOn
               ? "bg-red-500 text-white hover:bg-red-600"
               : "bg-lime text-black hover:brightness-110"
           }`}
         >
-          {simOn ? "■ Hentikan Simulasi" : "▶ Jalankan Simulasi"}
+          {simOn ? "HENTIKAN" : "JALANKAN SIMULASI"}
         </button>
         <span className="text-xs text-mute">
           {simOn
             ? "Simulasi berjalan: armada bergerak otomatis, ritase tercatat ke database."
             : "Nyalakan untuk mendemokan pergerakan armada secara live."}
         </span>
-        <span className="ml-auto flex items-center gap-2 text-xs text-mute">
+        <span className="ml-auto flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-mute">
           <span
-            className={`inline-block h-2 w-2 rounded-full ${
+            className={`inline-block h-2 w-2 animate-pulse rounded-full ${
               rtOk === null
                 ? "bg-yellow-400"
                 : rtOk
@@ -356,9 +379,9 @@ export default function DispatchBoard() {
 
       {/* fleet grid */}
       <div className="space-y-6">
-        {group("Haul Truck", trucks)}
-        {group("Shovel / Excavator", shovels)}
-        {group("Support", support)}
+        {group("01", "HAUL TRUCK", trucks)}
+        {group("02", "SHOVEL / EXCAVATOR", shovels)}
+        {group("03", "SUPPORT", support)}
       </div>
     </div>
   );

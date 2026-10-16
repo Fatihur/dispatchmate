@@ -5,8 +5,8 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  CartesianGrid,
   ResponsiveContainer,
-  Cell,
 } from "recharts";
 import { fetchUnits } from "../services/units.js";
 import {
@@ -17,6 +17,7 @@ import {
   fetchDelaySummary,
 } from "../services/delays.js";
 import { DELAY_CODES, DELAY_CODE_LIST } from "../data/delayCodes.js";
+import SectionHeader from "./SectionHeader.jsx";
 
 function fmtElapsed(startedAt) {
   const s = Math.max(0, Math.floor((Date.now() - new Date(startedAt)) / 1000));
@@ -35,6 +36,12 @@ function fmtDateTime(iso) {
     minute: "2-digit",
   });
 }
+
+const MONO_TICK = {
+  fill: "#8A94A3",
+  fontSize: 11,
+  fontFamily: "'JetBrains Mono', monospace",
+};
 
 export default function DelayLogger() {
   const [units, setUnits] = useState([]);
@@ -113,23 +120,23 @@ export default function DelayLogger() {
   return (
     <div className="space-y-6">
       {error && (
-        <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 font-mono text-xs text-red-300">
           {error}
         </div>
       )}
 
       {/* form catat delay */}
-      <div className="rounded-xl border border-line bg-panel p-5">
-        <h2 className="mb-4 text-sm font-bold uppercase tracking-widest text-mute">
-          Catat Delay Baru
-        </h2>
+      <div className="rounded-lg border border-line bg-panel p-5">
+        <SectionHeader index="01" title="Catat Delay Baru" className="mb-4" />
         <div className="grid gap-4 md:grid-cols-[200px_1fr]">
           <div>
-            <label className="mb-1.5 block text-xs text-mute">Unit</label>
+            <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.14em] text-mute">
+              Unit
+            </label>
             <select
               value={unitCode}
               onChange={(e) => setUnitCode(e.target.value)}
-              className="w-full rounded-lg border border-line bg-panel2 px-3 py-2.5 text-sm text-white outline-none focus:border-lime"
+              className="w-full rounded-lg border border-line bg-panel2 px-3 py-2.5 font-mono text-sm text-text outline-none focus:border-lime"
             >
               {units.map((u) => (
                 <option key={u.code} value={u.code}>
@@ -139,7 +146,7 @@ export default function DelayLogger() {
             </select>
           </div>
           <div>
-            <label className="mb-1.5 block text-xs text-mute">
+            <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.14em] text-mute">
               Kode delay
             </label>
             <div className="flex flex-wrap gap-2">
@@ -147,10 +154,10 @@ export default function DelayLogger() {
                 <button
                   key={code}
                   onClick={() => setDelayCode(code)}
-                  className={`rounded-lg border px-3 py-2 text-xs font-bold transition-colors ${
+                  className={`rounded-md border px-3 py-2 font-mono text-xs font-bold transition-colors ${
                     delayCode === code
                       ? "border-lime bg-lime text-black"
-                      : "border-line bg-panel2 text-mute hover:text-white"
+                      : "border-line bg-panel2 text-mute hover:border-lime hover:text-text"
                   }`}
                   title={DELAY_CODES[code].label}
                 >
@@ -158,7 +165,7 @@ export default function DelayLogger() {
                 </button>
               ))}
             </div>
-            <div className="mt-1.5 text-xs text-mute">
+            <div className="mt-1.5 font-mono text-[11px] text-mute">
               {delayCode} — {DELAY_CODES[delayCode].label}
             </div>
           </div>
@@ -168,7 +175,7 @@ export default function DelayLogger() {
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Catatan (opsional), mis. antre di EX-01 karena…"
-            className="flex-1 rounded-lg border border-line bg-panel2 px-3 py-2.5 text-sm text-white outline-none placeholder:text-mute/60 focus:border-lime"
+            className="flex-1 rounded-lg border border-line bg-panel2 px-3 py-2.5 text-sm text-text outline-none placeholder:text-mute/60 focus:border-lime"
           />
           <button
             onClick={handleStart}
@@ -181,26 +188,28 @@ export default function DelayLogger() {
       </div>
 
       {/* delay aktif */}
-      <div className="rounded-xl border border-line bg-panel p-5">
-        <h2 className="mb-4 text-sm font-bold uppercase tracking-widest text-mute">
-          Delay Berjalan ({active.length})
-        </h2>
+      <div className="rounded-lg border border-line bg-panel p-5">
+        <SectionHeader
+          index="02"
+          title={`Delay Berjalan (${active.length})`}
+          className="mb-2"
+        />
         {active.length === 0 ? (
-          <p className="text-sm text-mute">
+          <p className="py-2 text-sm text-mute">
             Tidak ada delay berjalan. Semua unit beroperasi normal.
           </p>
         ) : (
-          <div className="space-y-2">
+          <div className="divide-y divide-line">
             {active.map((d) => (
               <div
                 key={d.id}
-                className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-panel2 px-4 py-3"
+                className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3"
               >
-                <span className="font-mono text-sm font-bold text-white">
+                <span className="font-mono text-sm font-bold text-text">
                   {d.unit_code}
                 </span>
                 <span
-                  className="rounded-full px-2.5 py-0.5 text-xs font-bold"
+                  className="rounded-full px-2.5 py-0.5 font-mono text-[11px] font-bold"
                   style={{
                     color: DELAY_CODES[d.delay_code]?.color,
                     border: `1px solid ${DELAY_CODES[d.delay_code]?.color}55`,
@@ -210,10 +219,10 @@ export default function DelayLogger() {
                   {d.delay_code} —{" "}
                   {DELAY_CODES[d.delay_code]?.label || d.delay_code}
                 </span>
-                <span className="font-mono text-sm text-lime">
+                <span className="font-mono text-2xl font-bold text-lime">
                   {fmtElapsed(d.started_at)}
                 </span>
-                <span className="text-xs text-mute">
+                <span className="font-mono text-[11px] text-mute">
                   sejak {fmtDateTime(d.started_at)} · shift {d.shift}
                   {d.note ? ` · ${d.note}` : ""}
                 </span>
@@ -229,82 +238,84 @@ export default function DelayLogger() {
         )}
       </div>
 
-      {/* grafik pareto */}
-      <div className="rounded-xl border border-line bg-panel p-5">
-        <h2 className="mb-4 text-sm font-bold uppercase tracking-widest text-mute">
-          Total Menit Delay per Kode
-        </h2>
+      {/* grafik delay per kode */}
+      <div className="rounded-lg border border-line bg-panel p-5">
+        <SectionHeader
+          index="03"
+          title="Total Menit Delay per Kode"
+          className="mb-4"
+        />
         {summary.length === 0 ? (
-          <p className="text-sm text-mute">
+          <p className="py-2 text-sm text-mute">
             Belum ada data delay yang selesai dicatat.
           </p>
         ) : (
           <ResponsiveContainer width="100%" height={280}>
             <BarChart
               data={summary}
-              layout="vertical"
-              margin={{ top: 4, right: 24, bottom: 4, left: 4 }}
+              margin={{ top: 8, right: 16, bottom: 4, left: 0 }}
             >
+              <CartesianGrid stroke="#232B36" vertical={false} />
               <XAxis
-                type="number"
-                tick={{ fill: "#8A94A3", fontSize: 12 }}
+                dataKey="code"
+                tick={MONO_TICK}
                 tickLine={false}
-                axisLine={{ stroke: "#262E38" }}
+                axisLine={{ stroke: "#232B36" }}
               />
               <YAxis
-                type="category"
-                dataKey="label"
-                width={170}
-                tick={{ fill: "#E8ECF1", fontSize: 12 }}
+                tick={MONO_TICK}
                 tickLine={false}
-                axisLine={{ stroke: "#262E38" }}
+                axisLine={{ stroke: "#232B36" }}
+                width={44}
               />
               <Tooltip
                 contentStyle={{
-                  background: "#1B2129",
-                  border: "1px solid #262E38",
+                  background: "#161C24",
+                  border: "1px solid #232B36",
                   borderRadius: 8,
-                  color: "#fff",
+                  color: "#F2F4F7",
                   fontSize: 12,
+                  fontFamily: "'JetBrains Mono', monospace",
                 }}
-                formatter={(v) => [`${v} menit`, "Total"]}
+                formatter={(v, _n, props) => [
+                  `${v} menit`,
+                  props?.payload?.label || "Total",
+                ]}
               />
-              <Bar dataKey="minutes" radius={[0, 6, 6, 0]}>
-                {summary.map((row) => (
-                  <Cell key={row.code} fill={row.fill} />
-                ))}
-              </Bar>
+              <Bar dataKey="minutes" fill="#E9F40B" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}
       </div>
 
       {/* riwayat */}
-      <div className="rounded-xl border border-line bg-panel p-5">
-        <h2 className="mb-4 text-sm font-bold uppercase tracking-widest text-mute">
-          Riwayat Delay (20 terakhir)
-        </h2>
+      <div className="rounded-lg border border-line bg-panel p-5">
+        <SectionHeader
+          index="04"
+          title="Riwayat Delay (20 terakhir)"
+          className="mb-2"
+        />
         {history.length === 0 ? (
-          <p className="text-sm text-mute">Belum ada riwayat delay.</p>
+          <p className="py-2 text-sm text-mute">Belum ada riwayat delay.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead>
-                <tr className="border-b border-line text-xs uppercase tracking-wider text-mute">
-                  <th className="py-2 pr-4">Unit</th>
-                  <th className="py-2 pr-4">Kode</th>
-                  <th className="py-2 pr-4">Mulai</th>
-                  <th className="py-2 pr-4">Selesai</th>
-                  <th className="py-2 pr-4">Durasi</th>
-                  <th className="py-2 pr-4">Shift</th>
-                  <th className="py-2">Catatan</th>
+                <tr className="border-b border-line font-mono text-[10px] uppercase tracking-[0.14em] text-mute">
+                  <th className="py-2 pr-4 font-medium">Unit</th>
+                  <th className="py-2 pr-4 font-medium">Kode</th>
+                  <th className="py-2 pr-4 font-medium">Mulai</th>
+                  <th className="py-2 pr-4 font-medium">Selesai</th>
+                  <th className="py-2 pr-4 font-medium">Durasi</th>
+                  <th className="py-2 pr-4 font-medium">Shift</th>
+                  <th className="py-2 font-medium">Catatan</th>
                 </tr>
               </thead>
               <tbody>
                 {history.map((h) => (
                   <tr
                     key={h.id}
-                    className="border-b border-line/50 text-white/90"
+                    className="border-b border-line/60 text-text/90"
                   >
                     <td className="py-2.5 pr-4 font-mono font-bold">
                       {h.unit_code}
@@ -320,16 +331,18 @@ export default function DelayLogger() {
                         {h.delay_code}
                       </span>
                     </td>
-                    <td className="py-2.5 pr-4 text-mute">
+                    <td className="py-2.5 pr-4 font-mono text-[12px] text-mute">
                       {fmtDateTime(h.started_at)}
                     </td>
-                    <td className="py-2.5 pr-4 text-mute">
+                    <td className="py-2.5 pr-4 font-mono text-[12px] text-mute">
                       {fmtDateTime(h.ended_at)}
                     </td>
                     <td className="py-2.5 pr-4 font-mono text-lime">
                       {h.duration_min ?? "—"} mnt
                     </td>
-                    <td className="py-2.5 pr-4 text-mute">{h.shift || "—"}</td>
+                    <td className="py-2.5 pr-4 font-mono text-[12px] text-mute">
+                      {h.shift || "—"}
+                    </td>
                     <td className="py-2.5 text-mute">{h.note || "—"}</td>
                   </tr>
                 ))}

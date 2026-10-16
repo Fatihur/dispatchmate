@@ -5,7 +5,40 @@
 html,
 body {
   background: #0b0e11;
-  color: #fff;
+  color: #f2f4f7;
+}
+
+/* angka mono selalu tabular */
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+/* dotted grid taktis dengan fade di tepi */
+.bg-dotted-grid {
+  background-image: radial-gradient(circle, #1a222c 1px, transparent 1px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 90% 70% at 50% 0%,
+    black 30%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 90% 70% at 50% 0%,
+    black 30%,
+    transparent 100%
+  );
+}
+
+/* seleksi lime */
+::selection {
+  background: #e9f40b;
+  color: #0b0e11;
+}
+
+/* focus ring lime */
+:focus-visible {
+  outline: 2px solid #e9f40b;
+  outline-offset: 2px;
 }
 
 /* scrollbar gelap */
@@ -17,7 +50,7 @@ body {
   background: #0b0e11;
 }
 ::-webkit-scrollbar-thumb {
-  background: #262e38;
+  background: #232b36;
   border-radius: 6px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -25,5 +58,5 @@ body {
 }
 
 select option {
-  background: #1b2129;
+  background: #161c24;
 }

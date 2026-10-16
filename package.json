@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/work-sans": "^5.3.0",
     "@supabase/supabase-js": "^2.118.0",
     "autoprefixer": "^10.6.1",
     "postcss": "^8.5.30",
