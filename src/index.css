@@ -60,3 +60,7 @@ body {
 select option {
   background: #161c24;
 }
+
+input[type="datetime-local"] {
+  color-scheme: dark;
+}

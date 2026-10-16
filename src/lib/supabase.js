@@ -1,11 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Keys come ONLY from environment variables (see .env, never committed).
+// Keys come ONLY from environment variables (see .env.example, never committed).
 const url = import.meta.env.VITE_SUPABASE_URL;
 const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-export const supabase =
-  url && key ? createClient(url, key) : null;
+export const supabase = url && key ? createClient(url, key) : null;
 
 export function requireDb() {
   if (!supabase) {

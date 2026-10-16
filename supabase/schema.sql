@@ -1,72 +1,52 @@
--- ============================================================
--- DispatchMate — database schema (Supabase / Postgres)
--- Cara pakai: buka Supabase Dashboard → SQL Editor → New Query
---             → paste seluruh file ini → Run
--- ============================================================
+-- PitRoad: koordinasi kondisi jalan & hazard tambang (helper untuk FMS utama)
+-- Tabel: hazard_reports, road_closures. Tabel units dipakai ulang untuk assignment.
 
-create extension if not exists "pgcrypto";
-
--- ---------- Tabel armada ----------
-create table if not exists units (
-  id          uuid primary key default gen_random_uuid(),
-  code        text not null unique,              -- contoh: 'HD-01'
-  type        text not null,                     -- haul_truck | excavator | dozer | grader
-  status      text not null default 'standby',   -- loading | hauling | dumping | returning
-                                                -- queuing | refuel | breakdown | standby
-  assigned_to text,                              -- kode shovel yang dilayani unit ini
-  updated_at  timestamptz not null default now()
+-- ---------- Hazard reports ----------
+create table if not exists hazard_reports (
+  id uuid primary key default gen_random_uuid(),
+  area text not null,                       -- PIT_A | PIT_B | PIT_C | RAMP_UTAMA | DISPOSAL | ROM_PAD
+  bench text,                               -- mis. 'Bench 1140'
+  segment text not null,                    -- mis. 'Ramp B km 2.3'
+  hazard_type text not null,                 -- lubang | debu | licin | batu_jatuh | genangan | blind_spot | lainnya
+  severity text not null default 'sedang',   -- rendah | sedang | tinggi | kritis
+  description text,
+  reporter text not null,
+  status text not null default 'open',       -- open | assigned | in_progress | resolved
+  assigned_unit text references units(code),
+  target_at timestamptz,
+  reported_at timestamptz not null default now(),
+  acknowledged_at timestamptz,
+  resolved_at timestamptz,
+  resolution_note text
 );
+create index if not exists idx_hazard_status on hazard_reports(status);
+create index if not exists idx_hazard_severity on hazard_reports(severity);
+create index if not exists idx_hazard_area on hazard_reports(area);
+create index if not exists idx_hazard_reported on hazard_reports(reported_at desc);
 
--- ---------- Tabel catatan delay ----------
-create table if not exists delay_logs (
-  id           uuid primary key default gen_random_uuid(),
-  unit_code    text not null,                    -- kode unit yang delay
-  delay_code   text not null,                    -- QUE | RFL | BRK | WTH | RD | SC | IDL | MTN
-  started_at   timestamptz not null,
-  ended_at     timestamptz,
-  duration_min numeric,                           -- durasi menit (diisi saat stop)
-  note         text,
-  shift        text,                              -- Pagi | Siang | Malam
-  created_at   timestamptz not null default now()
+-- ---------- Road closures ----------
+create table if not exists road_closures (
+  id uuid primary key default gen_random_uuid(),
+  segment text not null,
+  reason text not null,                      -- blasting | maintenance | weather | accident | lainnya
+  detail text,
+  starts_at timestamptz not null,
+  ends_at timestamptz,
+  status text not null default 'scheduled',   -- scheduled | active | lifted
+  created_by text not null,
+  created_at timestamptz not null default now()
 );
+create index if not exists idx_closure_status on road_closures(status);
+create index if not exists idx_closure_starts on road_closures(starts_at);
 
--- ---------- Tabel riwayat cycle time ----------
-create table if not exists cycle_records (
-  id          uuid primary key default gen_random_uuid(),
-  unit_code   text not null,
-  shovel_code text,
-  started_at  timestamptz not null,
-  ended_at    timestamptz not null,
-  cycle_min   numeric not null,
-  created_at  timestamptz not null default now()
-);
+-- ---------- RLS: sama seperti tools internal single-user ----------
+alter table hazard_reports enable row level security;
+alter table road_closures  enable row level security;
 
--- ---------- Data awal armada ----------
-insert into units (code, type, status) values
-  ('HD-01','haul_truck','standby'),
-  ('HD-02','haul_truck','standby'),
-  ('HD-03','haul_truck','standby'),
-  ('HD-04','haul_truck','standby'),
-  ('HD-05','haul_truck','standby'),
-  ('HD-06','haul_truck','standby'),
-  ('EX-01','excavator','standby'),
-  ('EX-02','excavator','standby'),
-  ('DZ-01','dozer','standby'),
-  ('GR-01','grader','standby')
-on conflict (code) do nothing;
+drop policy if exists "public all hazard_reports" on hazard_reports;
+drop policy if exists "public all road_closures" on road_closures;
 
--- ---------- RLS: buka akses penuh untuk MVP (tools internal single-user) --
-alter table units         enable row level security;
-alter table delay_logs    enable row level security;
-alter table cycle_records enable row level security;
-
-drop policy if exists "public all units" on units;
-drop policy if exists "public all delay_logs" on delay_logs;
-drop policy if exists "public all cycle_records" on cycle_records;
-
-create policy "public all units"
-  on units for all using (true) with check (true);
-create policy "public all delay_logs"
-  on delay_logs for all using (true) with check (true);
-create policy "public all cycle_records"
-  on cycle_records for all using (true) with check (true);
+create policy "public all hazard_reports"
+  on hazard_reports for all using (true) with check (true);
+create policy "public all road_closures"
+  on road_closures for all using (true) with check (true);
